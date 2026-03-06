@@ -1,45 +1,117 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block content %}
 <style>
-.card:hover {
-    transform: scale(1.02);
-    transition: transform .1s;
-}
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .page-header h1 { font-size: 3rem; margin: 0; }
+
+  .result-count { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+
+  #loadingSpinner {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 0;
+  }
+
+  #emptyState {
+    display: none;
+    text-align: center;
+    padding: 80px 0;
+    color: var(--muted);
+  }
+
+  #emptyState h3 { font-size: 2rem; margin-bottom: 8px; }
 </style>
-<div class="container mt-5">
-    <h1 class="d-flex justify-content-between align-items-center">
-        Marvel Characters
-        <form id="searchForm" class="form-inline">
-            <input id="searchInput" class="form-control" type="text" name="search" placeholder="Search characters" value="{{ request.GET.search }}">
-            <input class="btn btn-primary ml-2" type="submit" value="Search">
-        </form>
-    </h1>
-    <div id="charactersList">
-        {% include 'characters_list_partial.html' %}
+
+<div class="page-header">
+  <div>
+    <h1>Characters</h1>
+    <div class="result-count" id="resultCount"></div>
+  </div>
+
+  <div style="width:100%;max-width:340px;">
+    <div class="search-wrapper">
+      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg"
+           width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115
+                 l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0
+                 0-.115-.099zm-5.242 1.156a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+      </svg>
+      <input id="searchInput" class="form-control search-input"
+             type="text" placeholder="Search characters…"
+             autocomplete="off" value="{{ request.GET.search }}">
     </div>
+  </div>
 </div>
 
-<script>
-$(document).ready(function() {
-    $('#searchForm').submit(function(event) {
-        event.preventDefault();
+<div id="loadingSpinner">
+  <div class="spinner-marvel"></div>
+</div>
 
-        var searchQuery = $('#searchInput').val();
-        $.ajax({
-            type: 'GET',
-            url: '{% url "characters_list" %}',
-            data: {
-                'search': searchQuery
-            },
-            success: function(data) {
-                $('#charactersList').html(data.characters_html);
-            },
-            error: function(xhr, errmsg, err) {
-                console.log(xhr.status + ': ' + xhr.responseText);
-            }
-        });
-    });
-});
+<div id="emptyState">
+  <h3>No Results</h3>
+  <p>Try a different name — not every hero is easy to find.</p>
+</div>
+
+<div id="charactersList">
+  {% include 'characters_list_partial.html' %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var input   = document.getElementById('searchInput');
+  var list    = document.getElementById('charactersList');
+  var spinner = document.getElementById('loadingSpinner');
+  var empty   = document.getElementById('emptyState');
+  var count   = document.getElementById('resultCount');
+  var timer;
+
+  function setCount(html) {
+    var tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    var n = tmp.querySelectorAll('.character-card').length;
+    count.textContent = n > 0
+      ? n + ' character' + (n !== 1 ? 's' : '') + ' found'
+      : '';
+  }
+
+  function search(q) {
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      spinner.style.display = 'flex';
+      list.style.display    = 'none';
+      empty.style.display   = 'none';
+
+      $.get('{% url "characters_list" %}', { search: q }, function (data) {
+        spinner.style.display = 'none';
+        list.innerHTML        = data.characters_html;
+        list.style.display    = 'block';
+        setCount(data.characters_html);
+
+        if (!list.querySelector('.character-card')) {
+          empty.style.display = 'block';
+          list.style.display  = 'none';
+        }
+      }).fail(function () {
+        spinner.style.display = 'none';
+        list.style.display    = 'block';
+      });
+    }, 300);
+  }
+
+  input.addEventListener('input', function () { search(this.value.trim()); });
+  setCount(list.innerHTML);
+}());
 </script>
 {% endblock %}

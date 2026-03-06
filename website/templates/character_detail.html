@@ -1,75 +1,265 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card mb-3 border shadow">
-                <img src="{{ character.thumbnail.path }}.{{ character.thumbnail.extension }}" alt="{{ character.name }}" class="card-img-top">
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card bg-light border shadow p-3">
-                <div class="card-body">
-                    <h1 class="card-title">{{ character.name }}</h1>
-                    <p class="card-text">{{ character.description }}</p>
-                    <h5 class="card-subtitle mb-2 text-muted">Comics:</h5>
-                    <ul class="list-group list-group-flush">
-                    {% for comic in character.comics.items %}
-                        <li class="list-group-item">{{ comic.name }}</li>
-                    {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
+<style>
+  .char-hero {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 40px;
+  }
+
+  .char-hero img {
+    width: 220px;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+  }
+
+  .char-name { font-size: clamp(2.2rem, 5vw, 3.5rem); margin-bottom: 12px; }
+  .char-desc { color: var(--muted); line-height: 1.8; font-size: 0.95rem; }
+
+  /* Tabs */
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 10px 20px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--red); border-bottom-color: var(--red); }
+
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  .comic-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+
+  .comic-list li {
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 0.84rem;
+    color: var(--text);
+  }
+
+  .no-data {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 0.9rem;
+    padding: 20px 0;
+  }
+
+  /* Discussion */
+  .discussion-header { margin-bottom: 20px; }
+
+  textarea.form-control {
+    background-color: var(--surface-2);
+    border-color: var(--border);
+    color: var(--text);
+    resize: vertical;
+    min-height: 90px;
+  }
+
+  textarea.form-control:focus {
+    background-color: #2a2a2a;
+    border-color: var(--red);
+    color: var(--text);
+    box-shadow: 0 0 0 0.15rem rgba(230,36,41,0.2);
+  }
+
+  .post-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
+</style>
+
+<!-- Character hero section -->
+<div class="char-hero">
+  <div class="row align-items-center gy-4">
+    <div class="col-auto">
+      <img src="{{ character.thumbnail.path }}.{{ character.thumbnail.extension }}"
+           alt="{{ character.name }}">
     </div>
-    <form method="post" action="{% url 'add_to_favorites' character.id %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Add to Favorites</button>
-    </form>
+    <div class="col">
+      <h1 class="char-name">{{ character.name }}</h1>
+      {% if character.description %}
+        <p class="char-desc">{{ character.description }}</p>
+      {% else %}
+        <p class="char-desc">No description available for this character.</p>
+      {% endif %}
+
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'add_to_favorites' character.id %}"
+              class="mt-3" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn-marvel btn">+ Add to Favorites</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
 </div>
+
+<!-- Tabbed data panel -->
+<div class="tab-nav" role="tablist">
+  <button class="tab-btn active" data-tab="comics">
+    Comics <span style="color:var(--muted);font-weight:400;">({{ character.comics.available }})</span>
+  </button>
+  <button class="tab-btn" data-tab="series">
+    Series <span style="color:var(--muted);font-weight:400;">({{ character.series.available }})</span>
+  </button>
+  <button class="tab-btn" data-tab="events">
+    Events <span style="color:var(--muted);font-weight:400;">({{ character.events.available }})</span>
+  </button>
+  <button class="tab-btn" data-tab="stories">
+    Stories <span style="color:var(--muted);font-weight:400;">({{ character.stories.available }})</span>
+  </button>
+</div>
+
+<div id="tab-comics" class="tab-pane active">
+  {% if character.comics.items %}
+    <ul class="comic-list">
+      {% for item in character.comics.items %}
+        <li>{{ item.name }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="no-data">No comics listed for this character.</p>
+  {% endif %}
+</div>
+
+<div id="tab-series" class="tab-pane">
+  {% if character.series.items %}
+    <ul class="comic-list">
+      {% for item in character.series.items %}
+        <li>{{ item.name }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="no-data">No series listed for this character.</p>
+  {% endif %}
+</div>
+
+<div id="tab-events" class="tab-pane">
+  {% if character.events.items %}
+    <ul class="comic-list">
+      {% for item in character.events.items %}
+        <li>{{ item.name }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="no-data">No events listed for this character.</p>
+  {% endif %}
+</div>
+
+<div id="tab-stories" class="tab-pane">
+  {% if character.stories.items %}
+    <ul class="comic-list">
+      {% for item in character.stories.items %}
+        <li>{{ item.name }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="no-data">No stories listed for this character.</p>
+  {% endif %}
+</div>
+
+<!-- Discussion -->
 <div class="mt-5">
-    <h2>Discussion</h2>
-    <form method="post" action="{% url 'create_post' character.id %}">
-        {% csrf_token %}
-        <div class="form-group bg-light shadow">
-            <textarea name="content" class="form-control" placeholder="Write a post..." required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Post</button>
-        <br>
-        <br>
+  <div class="section-title discussion-header">Discussion</div>
+
+  {% if user.is_authenticated %}
+    <form method="post" action="{% url 'create_post' character.id %}" class="mb-4">
+      {% csrf_token %}
+      <textarea name="content" class="form-control" placeholder="Share your thoughts…" required></textarea>
+      <div class="post-actions">
+        <button type="submit" class="btn-marvel btn mt-2">Post</button>
+      </div>
     </form>
+  {% else %}
+    <p class="text-muted mb-4" style="font-size:0.9rem;">
+      <a href="{% url 'home' %}" style="color:var(--red);">Sign in</a> to join the discussion.
+    </p>
+  {% endif %}
 
+  {% for post in posts %}
+    <div class="post-card">
+      <p style="margin:0 0 8px;">{{ post.content }}</p>
+      <div class="post-meta">
+        ~ {{ post.user.username }}
+        &nbsp;·&nbsp; {{ post.created_at|date:"M j, Y" }}
+      </div>
 
-    {% for post in posts %}
-        <div class="post">
-            <p>{{ post.content }}</p>
-            <div class="username">
-                <h3> ~ {{ post.user.username }}</h3>
-            </div>
-            {% for reply in post.replies.all %}
-                <div class="reply">
-                    <p class="reply-content">{{ reply.content }}</p>
-                    <div class="reply-username">
-                        <h4> ~ {{ reply.user.username }}</h4>
-                    </div>
-                </div>
-            {% endfor %}
-            <button class="reply-button" type="button" data-toggle="collapse" data-target="#replyForm{{post.id}}" aria-expanded="false" aria-controls="replyForm{{post.id}}">
-                Reply to {{ post.user.username }}
-            </button>
-            <div class="collapse mt-2" id="replyForm{{post.id}}">
-                <form method="post" action="{% url 'create_reply' post.id %}">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <textarea name="content" class="form-control" placeholder="Write a reply..." required></textarea>
-                    </div>
-                    <div class="submit-button-container">
-                        <button type="submit" class="btn btn-secondary">Submit Reply</button>
-                    </div>
-                </form>
-            </div>
+      {% for reply in post.replies.all %}
+        <div class="reply-card">
+          <p style="margin:0 0 6px;font-size:0.92rem;">{{ reply.content }}</p>
+          <div class="post-meta">~ {{ reply.user.username }}</div>
         </div>
-    {% endfor %}
+      {% endfor %}
+
+      {% if user.is_authenticated %}
+        <div class="mt-2">
+          <button class="reply-btn" type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#reply-{{ post.id }}"
+                  aria-expanded="false">
+            Reply to {{ post.user.username }}
+          </button>
+          <div class="collapse mt-2" id="reply-{{ post.id }}">
+            <form method="post" action="{% url 'create_reply' post.id %}">
+              {% csrf_token %}
+              <textarea name="content" class="form-control"
+                        placeholder="Write a reply…" required></textarea>
+              <div class="post-actions">
+                <button type="submit" class="btn btn-sm btn-outline-secondary mt-2">
+                  Submit Reply
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  {% empty %}
+    <p class="text-muted" style="font-size:0.9rem;">
+      No posts yet. Be the first to start the discussion!
+    </p>
+  {% endfor %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.tab-btn').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+    document.querySelectorAll('.tab-pane').forEach(function (p) { p.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+</script>
 {% endblock %}

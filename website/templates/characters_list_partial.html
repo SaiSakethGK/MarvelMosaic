@@ -1,19 +1,23 @@
-<div id="charactersList" class="row">
-    {% for character in characters %}
-        {% if character.description and character.thumbnail.path and character.thumbnail.extension %}
-            <div class="col-md-6 mb-4">
-                <a href="/character/{{ character.id }}" style="text-decoration: none; color: inherit;">
-                    <div class="card bg-light border shadow p-3" style="height: 250px; overflow-y: hidden;">
-                        <div class="d-flex">
-                            <img src="{{ character.thumbnail.path }}.{{ character.thumbnail.extension }}" alt="{{ character.name }}" style="width: 218px; height: 218px; border-radius: 3%;">
-                            <div class="ml-2">
-                                <h6 style="margin-bottom: 10px; margin-left: 10px;">{{ character.name }}</h6>
-                                <p style="margin-left: 10px;">{{ character.description }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </a>
+<div class="row g-4">
+  {% for character in characters %}
+    {% if character.description and character.thumbnail.path and character.thumbnail.extension %}
+      <div class="col-md-6 col-lg-4">
+        <a href="{% url 'character_detail' character.id %}"
+           class="character-card card-dark d-block p-3"
+           style="text-decoration:none;height:100%;">
+          <div class="d-flex gap-3">
+            <img src="{{ character.thumbnail.path }}.{{ character.thumbnail.extension }}"
+                 alt="{{ character.name }}"
+                 loading="lazy"
+                 style="width:110px;height:110px;object-fit:cover;
+                        border-radius:6px;flex-shrink:0;">
+            <div style="overflow:hidden;min-width:0;">
+              <h6 class="name mb-2">{{ character.name }}</h6>
+              <p class="desc mb-0">{{ character.description }}</p>
             </div>
-        {% endif %}
-    {% endfor %}
+          </div>
+        </a>
+      </div>
+    {% endif %}
+  {% endfor %}
 </div>
