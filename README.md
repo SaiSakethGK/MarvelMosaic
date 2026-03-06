@@ -81,4 +81,4 @@ python manage.py test website.tests
 
 ## Author
 
-**Sai Saketh Gooty Kase**
+**Sai Saketh Gooty Kase** and **Jaydeep**
