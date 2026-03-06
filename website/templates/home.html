@@ -1,36 +1,221 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+  .hero {
+    min-height: 72vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
 
-<div class="col-md-6 offset-md-3">
-    {% if user.is_authenticated %}
-        <br>
-        <br>
-        <br>
-        <section class="jumbotron text-center bg-light border shadow p-3">
-            <div class="container">
-                <h1 class="jumbotron-heading">Welcome {{ user.username }}</h1>
-                <p class="lead text-muted">Discover the stories of all your favorite heroes and villains, from the Avengers to the X-Men and beyond. Explore iconic characters, and immerse yourself in the extraordinary world of Marvel Comics!</p>
-                <p>
-                    <a href="/characters_list" class="btn btn-primary my-2">Search Characters</a>
-                    <a href="{% url 'view_favorites' %}" class="btn btn-secondary my-2">View Favourites</a>
-                </p>
-            </div>
-        </section>
-    {% else %}
-        <h1>Login</h1>
-        <form method="POST" action="{% url 'home' %}">
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 70% 50%, rgba(230,36,41,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 80% at 10% 80%, rgba(230,36,41,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    background-color: rgba(230,36,41,0.12);
+    color: var(--red);
+    border: 1px solid rgba(230,36,41,0.3);
+    border-radius: 50px;
+    padding: 4px 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .hero-headline {
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    line-height: 1;
+    margin-bottom: 18px;
+  }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    color: var(--muted);
+    max-width: 500px;
+    line-height: 1.7;
+    margin-bottom: 36px;
+  }
+
+  .stat-grid {
+    display: flex;
+    gap: 32px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+
+  .stat-num {
+    font-family: 'Bebas Neue', 'Impact', sans-serif;
+    font-size: 2.4rem;
+    color: var(--red);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .login-card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px 36px;
+    max-width: 420px;
+    width: 100%;
+  }
+
+  .login-card h2 { font-size: 2.2rem; margin-bottom: 6px; }
+
+  .login-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; }
+
+  .login-or {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin: 20px 0;
+    position: relative;
+  }
+
+  .login-or::before, .login-or::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 42%;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .login-or::before { left: 0; }
+  .login-or::after  { right: 0; }
+</style>
+
+{% if user.is_authenticated %}
+
+<div class="hero">
+  <div class="container">
+    <div class="row align-items-center gy-5">
+
+      <div class="col-lg-7">
+        <div class="hero-tag">Welcome back</div>
+        <h1 class="hero-headline">
+          {{ user.first_name|default:user.username }}<span class="text-red">.</span>
+        </h1>
+        <p class="hero-sub">
+          Explore thousands of Marvel characters from every corner of the
+          universe — heroes, villains, and everything in between.
+          Save your favourites and join the conversation.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <a href="{% url 'characters_list' %}" class="btn-marvel btn">Browse Characters</a>
+          <a href="{% url 'view_favorites' %}"
+             class="btn btn-outline-secondary"
+             style="border-color:var(--border); color:var(--muted);">My Favorites</a>
+        </div>
+
+        <div class="stat-grid">
+          <div>
+            <div class="stat-num">80+</div>
+            <div class="stat-label">Characters</div>
+          </div>
+          <div>
+            <div class="stat-num">30K+</div>
+            <div class="stat-label">Comics</div>
+          </div>
+          <div>
+            <div class="stat-num">1939</div>
+            <div class="stat-label">Est.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5 d-none d-lg-flex justify-content-end">
+        <div style="position:relative;width:300px;height:300px;">
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"
+               style="width:100%;height:100%;opacity:0.06;">
+            <polygon points="100,10 190,50 190,150 100,190 10,150 10,50"
+                     fill="none" stroke="#e62429" stroke-width="2"/>
+            <polygon points="100,30 170,60 170,140 100,170 30,140 30,60"
+                     fill="none" stroke="#e62429" stroke-width="1"/>
+          </svg>
+          <div style="
+            position:absolute;top:50%;left:50%;
+            transform:translate(-50%,-50%);
+            font-family:'Bebas Neue','Impact',sans-serif;
+            font-size:4.5rem;color:rgba(230,36,41,0.12);
+            letter-spacing:4px;line-height:1;text-align:center;
+          ">MARVEL<br>MOSAIC</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% else %}
+
+<div class="hero">
+  <div class="container">
+    <div class="row align-items-center justify-content-between gy-5">
+
+      <div class="col-lg-6">
+        <div class="hero-tag">Marvel Universe</div>
+        <h1 class="hero-headline">
+          Every Hero.<br>Every <span class="text-red">Villain.</span>
+        </h1>
+        <p class="hero-sub">
+          Marvel Mosaic is your personal guide through the Marvel universe.
+          Track characters, rank your favourites, and discuss story arcs
+          with other fans.
+        </p>
+        <a href="{% url 'register' %}" class="btn-marvel btn">Get Started — It's Free</a>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="login-card mx-auto mx-lg-0 ms-lg-auto">
+          <h2>Sign In</h2>
+          <p class="login-sub">Access your profile and saved characters.</p>
+
+          <form method="POST" action="{% url 'home' %}">
             {% csrf_token %}
-            <form>
-                <div class="mb-3">
-                  <input type="text" class="form-control" name="username" placeholder="Username" required>
-                </div>
-                <div class="mb-3">
-                  <input type="password" class="form-control" name="password" placeholder="Password" required>
-                </div>
-                <button type="submit" class="btn btn-secondary">Login</button>
-              </form>
-        </form>
-    {% endif %}
+            <div class="mb-3">
+              <input type="text" class="form-control" name="username"
+                     placeholder="Username" required autocomplete="username">
+            </div>
+            <div class="mb-4">
+              <input type="password" class="form-control" name="password"
+                     placeholder="Password" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn-marvel btn w-100">Login</button>
+          </form>
 
+          <div class="login-or">or</div>
+
+          <a href="{% url 'register' %}"
+             class="btn w-100"
+             style="border:1px solid var(--border);color:var(--muted);">
+            Create an account
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endif %}
 {% endblock %}
