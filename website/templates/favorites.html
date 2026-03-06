@@ -1,69 +1,145 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+  .fav-card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    height: 100%;
+  }
+
+  .fav-card:hover {
+    border-color: var(--red);
+    box-shadow: 0 6px 20px rgba(230,36,41,0.12);
+  }
+
+  .fav-card img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
+  .fav-name { font-weight: 700; font-size: 1rem; color: var(--text); }
+
+  .remove-btn {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+    transition: color 0.15s;
+  }
+
+  .remove-btn:hover { color: var(--red); }
+
+  .rank-select {
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+
+  .rank-select:focus { border-color: var(--red); outline: none; }
+
+  .empty-state {
+    text-align: center;
+    padding: 100px 0;
+    color: var(--muted);
+  }
+
+  .empty-state h2 { font-size: 2.5rem; margin-bottom: 12px; }
+  .empty-state p  { font-size: 0.95rem; margin-bottom: 28px; }
+</style>
 
 {% if no_characters_found %}
-    <h2 class="text-center">No characters found in your favorites list !!</h2>
-    <br>
+  <div class="empty-state">
+    <h2>No Favorites Yet</h2>
+    <p>Start exploring characters and save the ones you love.</p>
+    <a href="{% url 'characters_list' %}" class="btn-marvel btn">Browse Characters</a>
+  </div>
+
 {% else %}
-<div class="container mt-5">
-    <h1 class="text-center">My Favorite Characters!</h1>
-    <br>
-    <div class="row">
-        {% for character_data in characters_data %}
-        <div class="col-md-4 mb-4">
-            <div class="card position-relative border shadow bg-light p-3">
-                <button type="button" class="btn-close position-absolute top-0 end-0" aria-label="Close" style="z-index: 1;" data-toggle="modal" data-target="#removeModal{{ character_data.id }}"></button>
+  <div class="section-title mb-4">My Favorites</div>
 
-                <div class="row no-gutters">
-                    <div class="col-md-4 d-flex align-items-center justify-content-center">
-                        <img src="{{ character_data.image_url }}" alt="{{ character_data.name }}" class="character-image img-fluid">
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card-body">
-                            <h5 class="card-title font-weight-bold py-2">{{ character_data.name }}</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <form method="post" action="{% url 'update_rank' character_data.id %}" class="d-flex align-items-center">
-                        {% csrf_token %}
-                        <select name="rank" class="form-control form-control-sm mr-2">
-                            {% for i in range %}
-                                <option value="{{ i }}" {% if i == character_data.rank %}selected{% endif %}>Rank: {{ i }}</option>
-                            {% endfor %}
-                        </select>
-                        <button type="submit" class="btn btn-secondary btn-sm">Update</button>
-                    </form>
-                </div>
+  <div class="row g-4">
+    {% for cd in characters_data %}
+      <div class="col-md-6 col-lg-4">
+        <div class="fav-card">
 
-                <div class="modal fade" id="removeModal{{ character_data.id }}" tabindex="-1" role="dialog" aria-labelledby="removeModalLabel{{ character_data.id }}" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="removeModalLabel{{ character_data.id }}">Confirm Removal</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                Are you sure you want to remove {{ character_data.name }} from your favorites?
-                            </div>
-                            <div class="modal-footer">
-                                <form method="post" action="{% url 'remove_from_favorites' character_data.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger">Yes, remove</button>
-                                </form>
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">No, go back</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+          <button class="remove-btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modal-{{ cd.id }}"
+                  aria-label="Remove {{ cd.name }}">&times;</button>
+
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="rank-badge">{{ cd.rank|default:"–" }}</div>
+            <img src="{{ cd.image_url }}" alt="{{ cd.name }}">
+            <div>
+              <div class="fav-name">{{ cd.name }}</div>
+              <a href="{% url 'character_detail' cd.id %}"
+                 style="font-size:0.78rem;color:var(--muted);">View details →</a>
             </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
+          </div>
 
+          <form method="post" action="{% url 'update_rank' cd.id %}"
+                class="d-flex align-items-center gap-2">
+            {% csrf_token %}
+            <select name="rank" class="rank-select">
+              {% for i in range %}
+                <option value="{{ i }}" {% if i == cd.rank %}selected{% endif %}>
+                  Rank {{ i }}
+                </option>
+              {% endfor %}
+            </select>
+            <button type="submit"
+                    class="btn btn-sm"
+                    style="background:var(--surface-2);color:var(--muted);
+                           border:1px solid var(--border);font-size:0.78rem;">
+              Update
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Confirmation modal -->
+      <div class="modal fade" id="modal-{{ cd.id }}"
+           tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Remove from Favorites?</h5>
+              <button type="button" class="btn-close"
+                      data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="color:var(--muted);font-size:0.9rem;">
+              Remove <strong style="color:var(--text);">{{ cd.name }}</strong>
+              from your favorites list?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary btn-sm"
+                      data-bs-dismiss="modal">Cancel</button>
+              <form method="post" action="{% url 'remove_from_favorites' cd.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm">Yes, Remove</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
 {% endblock %}

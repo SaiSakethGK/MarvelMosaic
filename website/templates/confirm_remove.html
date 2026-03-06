@@ -1,25 +1,24 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    Confirm Removal
-                </div>
-                <div class="card-body shadow">
-                    <h5 class="card-title">Are you sure you want to remove {{ character.name }} from your favorites?</h5>
-                    <div class="d-flex">
-                        <form method="post" action="{% url 'remove_from_favorites' character.id %}" class="mr-2">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger">Yes, remove</button>
-                        </form>
-                        <a href="{% url 'view_favorites' %}" class="btn btn-secondary">No, go back</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div style="max-width:460px;margin:80px auto;">
+  <div style="background:var(--surface);border:1px solid var(--border);
+              border-radius:12px;padding:40px 36px;text-align:center;">
+    <h2 style="font-size:1.8rem;margin-bottom:10px;">Remove Character?</h2>
+    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:32px;">
+      Are you sure you want to remove
+      <strong style="color:var(--text);">{{ character.name }}</strong>
+      from your favorites?
+    </p>
+    <div class="d-flex justify-content-center gap-3">
+      <form method="post" action="{% url 'remove_from_favorites' character.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, Remove</button>
+      </form>
+      <a href="{% url 'view_favorites' %}" class="btn btn-outline-secondary">
+        Cancel
+      </a>
     </div>
+  </div>
 </div>
 {% endblock %}
