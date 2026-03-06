@@ -1,104 +1,341 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MARVEL Mosaic</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-        }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d0d0d">
+  <title>Marvel Mosaic</title>
 
-        .post {
-            background-color: #f4f4f4;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            display: flex;
-            flex-direction: column;
-        }
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous">
 
-        .reply {
-            background-color: #e9e9e9;
-            padding: 5px 10px;
-            margin-bottom: 15px;
-            margin-left: 40px;
-            border-radius: 5px;
-            display: flex;
-            flex-direction: column;
-        }
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
 
-        .post h3, .reply h4 {
-            color: #333;
-            font-size: 0.8em;
-        }
+  <style>
+    /* ── Design tokens ─────────────────────────────────────────── */
+    :root {
+      --red:        #e62429;
+      --red-dark:   #b81c20;
+      --bg:         #0d0d0d;
+      --surface:    #1a1a1a;
+      --surface-2:  #222222;
+      --border:     #2d2d2d;
+      --text:       #f0f0f0;
+      --muted:      #888888;
+      --gold:       #ffd700;
+    }
 
-        .reply-button{
-            background-color: #ddd;
-            color: #333;
-            border: none;
-            padding: 5px 10px;
-            margin: 10px 0;
-            cursor: pointer;
-            align-self: flex-start;
-            border-radius: 5px;
-        }
+    /* ── Base ───────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
 
-        .reply-button:hover{
-            background-color: #ccc;
-        }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+    }
 
-        .submit-button-container {
-            text-align: left;
-        }
+    h1, h2, h3, .brand {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      letter-spacing: 1px;
+    }
 
-        .username {
-            text-align: right;
-        }
+    a { color: var(--red); text-decoration: none; }
+    a:hover { color: var(--red-dark); }
 
-        .post p {
-            font-size: 1em;
-        }
+    /* ── Scrollbar ──────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--red); }
 
-        .reply-content {
-            font-size: 1.4em;
-        }
+    /* ── Navbar ─────────────────────────────────────────────────── */
+    .navbar {
+      background-color: #111 !important;
+      border-bottom: 2px solid var(--red);
+      padding: 10px 0;
+    }
 
-        .reply-username {
-            font-size: 1em;
-            text-align: right;
-            margin-top: auto;
-        }
+    .navbar-brand {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 1.9rem;
+      color: var(--red) !important;
+      letter-spacing: 3px;
+      line-height: 1;
+    }
 
-        .character-image {
-            width: 83%;
-            height: auto;
-            border-top-left-radius: calc(.25rem - 1px);
-            border-bottom-left-radius: calc(.25rem - 1px);
-        }
-    </style>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    .nav-link {
+      color: #ccc !important;
+      font-weight: 500;
+      transition: color 0.15s;
+      padding: 6px 14px !important;
+      border-radius: 4px;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: #fff !important;
+      background-color: rgba(230, 36, 41, 0.15);
+    }
+
+    .navbar-toggler { border-color: var(--border); }
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28240, 240, 240, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+
+    /* ── Buttons ────────────────────────────────────────────────── */
+    .btn-marvel {
+      background-color: var(--red);
+      color: #fff;
+      border: none;
+      padding: 10px 26px;
+      border-radius: 4px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .btn-marvel:hover {
+      background-color: var(--red-dark);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline-marvel {
+      border: 1.5px solid var(--red);
+      color: var(--red);
+      background: transparent;
+      padding: 9px 24px;
+      border-radius: 4px;
+      font-weight: 600;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .btn-outline-marvel:hover {
+      background-color: var(--red);
+      color: #fff;
+    }
+
+    /* ── Cards ──────────────────────────────────────────────────── */
+    .card-dark {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: transform 0.2s ease, border-color 0.2s ease,
+                  box-shadow 0.2s ease;
+    }
+
+    .card-dark:hover {
+      transform: translateY(-4px);
+      border-color: var(--red);
+      box-shadow: 0 8px 28px rgba(230, 36, 41, 0.18);
+    }
+
+    /* ── Forms ──────────────────────────────────────────────────── */
+    .form-control {
+      background-color: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+    }
+
+    .form-control:focus {
+      background-color: #2a2a2a;
+      border-color: var(--red);
+      color: var(--text);
+      box-shadow: 0 0 0 0.15rem rgba(230, 36, 41, 0.25);
+    }
+
+    .form-control::placeholder { color: var(--muted); }
+
+    /* ── Alerts ─────────────────────────────────────────────────── */
+    .alert-warning {
+      background-color: #2a1e00;
+      color: #ffc107;
+      border: 1px solid #5a3e00;
+    }
+
+    .alert-success {
+      background-color: #002a15;
+      color: #28a745;
+      border: 1px solid #005a2a;
+    }
+
+    .alert-info {
+      background-color: #001e2a;
+      color: #17a2b8;
+      border: 1px solid #004a5a;
+    }
+
+    .btn-close { filter: invert(1); }
+
+    /* ── Discussion posts ───────────────────────────────────────── */
+    .post-card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .post-meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: right;
+      margin-top: 8px;
+    }
+
+    .reply-card {
+      background-color: var(--surface-2);
+      border-left: 3px solid var(--red);
+      border-radius: 0 6px 6px 0;
+      padding: 12px 16px;
+      margin: 8px 0 8px 28px;
+    }
+
+    .reply-btn {
+      background-color: #2a2a2a;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 4px 14px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .reply-btn:hover { color: var(--text); border-color: var(--red); }
+
+    /* ── Search bar ─────────────────────────────────────────────── */
+    .search-wrapper { position: relative; }
+
+    .search-wrapper .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .search-input {
+      padding-left: 40px !important;
+      border-radius: 50px !important;
+      background-color: var(--surface-2) !important;
+      border-color: var(--border) !important;
+      color: var(--text) !important;
+    }
+
+    .search-input:focus { border-color: var(--red) !important; }
+
+    /* ── Spinner ────────────────────────────────────────────────── */
+    .spinner-marvel {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--red);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Rank badge ─────────────────────────────────────────────── */
+    .rank-badge {
+      background-color: var(--red);
+      color: #fff;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ── Utilities ──────────────────────────────────────────────── */
+    .text-red   { color: var(--red); }
+    .text-muted { color: var(--muted) !important; }
+    .bg-surface { background-color: var(--surface); }
+    .border-dark-custom { border-color: var(--border) !important; }
+
+    .section-title {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 2px;
+      border-left: 4px solid var(--red);
+      padding-left: 14px;
+      margin-bottom: 24px;
+    }
+
+    /* ── Modal overrides ────────────────────────────────────────── */
+    .modal-content {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .modal-header { border-bottom-color: var(--border); }
+    .modal-footer { border-top-color: var(--border); }
+
+    /* ── Select ─────────────────────────────────────────────────── */
+    select.form-select {
+      background-color: var(--surface-2);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    select.form-select:focus { border-color: var(--red); box-shadow: none; }
+
+    /* ── Footer ─────────────────────────────────────────────────── */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 0;
+      margin-top: 60px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+  </style>
 </head>
-<body class="body-background">
-    {% include 'navbar.html' %}
+
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="container py-4">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'warning' }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <footer class="site-footer">
     <div class="container">
-        <br/>
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-        {% block content %}
-        {% endblock %}
+      Data provided by <a href="https://developer.marvel.com" target="_blank" rel="noopener">Marvel</a>.
+      &nbsp;|&nbsp; Built by <strong>Sai Saketh Gooty Kase</strong>
     </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+          crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+          integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+          crossorigin="anonymous"></script>
+  {% block scripts %}{% endblock %}
 </body>
 </html>
-
